@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(git init *)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(node -e \"const c=require\\('crypto'\\);console.log\\('NEXUS='+c.randomBytes\\(32\\).toString\\('hex'\\)\\);console.log\\('CIPHER='+c.randomBytes\\(32\\).toString\\('hex'\\)\\);console.log\\('RELAY='+c.randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "Bash(node_modules/.bin/tsc --noEmit)"
     ]
   }
 }

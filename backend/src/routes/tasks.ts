@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { taskController } from '../controllers/taskController';
 import { validateRequest } from '../middleware/validateRequest';
+import { agentAuth } from '../middleware/agentAuth';
 
 const router = Router();
 
@@ -38,8 +39,9 @@ const updateTaskSchema = z.object({
 
 router.get('/', taskController.getAll);
 router.get('/:id', taskController.getById);
-router.post('/', validateRequest(createTaskSchema), taskController.create);
-router.put('/:id', validateRequest(updateTaskSchema), taskController.update);
+// Agent-facing write endpoints require a valid API key
+router.post('/', agentAuth, validateRequest(createTaskSchema), taskController.create);
+router.put('/:id', agentAuth, validateRequest(updateTaskSchema), taskController.update);
 router.delete('/:id', taskController.delete);
 
 export default router;

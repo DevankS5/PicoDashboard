@@ -9,6 +9,7 @@ import boardRoutes from './routes/boards';
 import approvalRoutes from './routes/approvals';
 import { errorHandler } from './middleware/errorHandler';
 import { validateRequest } from './middleware/validateRequest';
+import { agentAuth } from './middleware/agentAuth';
 import { z } from 'zod';
 import { approvalController } from './controllers/approvalController';
 
@@ -30,13 +31,14 @@ app.use('/tasks', taskRoutes);
 app.use('/boards', boardRoutes);
 app.use('/approvals', approvalRoutes);
 
-// Top-level agent shortcut: POST /require_approval
+// Top-level agent shortcut: POST /require_approval (agent-facing, requires API key)
 const requireApprovalSchema = z.object({
   taskId: z.string().uuid('taskId must be a valid UUID'),
   reason: z.string().optional(),
 });
 app.post(
   '/require_approval',
+  agentAuth,
   validateRequest(requireApprovalSchema),
   approvalController.requireApproval
 );
