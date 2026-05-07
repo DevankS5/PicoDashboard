@@ -1,6 +1,6 @@
 export function formatDate(date: string | null | undefined): string {
   if (!date) return '—';
-  return new Date(date).toLocaleDateString('en-US', {
+  return toUtcDate(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -9,7 +9,7 @@ export function formatDate(date: string | null | undefined): string {
 
 export function formatDateTime(date: string | null | undefined): string {
   if (!date) return '—';
-  return new Date(date).toLocaleString('en-US', {
+  return toUtcDate(date).toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -18,10 +18,15 @@ export function formatDateTime(date: string | null | undefined): string {
   });
 }
 
+function toUtcDate(date: string): Date {
+  // Backend returns UTC timestamps without 'Z' suffix — force UTC parsing
+  return new Date(date.endsWith('Z') || date.includes('+') ? date : date + 'Z');
+}
+
 export function formatRelative(date: string | null | undefined): string {
   if (!date) return 'Never';
   const now = Date.now();
-  const then = new Date(date).getTime();
+  const then = toUtcDate(date).getTime();
   const diffMs = now - then;
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffSecs / 60);
