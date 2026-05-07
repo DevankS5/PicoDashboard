@@ -9,7 +9,12 @@
       "Bash(docker-compose up *)",
       "PowerShell(docker exec cc-backend-1 wget -qO- http://185.197.31.37:18790/health 2>&1)",
       "Bash(curl -s -X POST http://localhost:3001/tasks -H \"Content-Type: application/json\" -d \"{\\\\\"boardId\\\\\":\\\\\"test\\\\\",\\\\\"title\\\\\":\\\\\"test\\\\\"}\")",
-      "WebFetch(domain:docs.picoclaw.io)"
+      "WebFetch(domain:docs.picoclaw.io)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\devan\\\\Downloads\\\\Orygin\\\\Cc\\\\backend\\\\src\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Recurse -Force \"c:\\\\Users\\\\devan\\\\Downloads\\\\Orygin\\\\Cc\\\\backend\\\\prisma\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Force \"c:\\\\Users\\\\devan\\\\Downloads\\\\Orygin\\\\Cc\\\\backend\\\\package.json\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Force \"c:\\\\Users\\\\devan\\\\Downloads\\\\Orygin\\\\Cc\\\\backend\\\\package-lock.json\" -ErrorAction SilentlyContinue)",
+      "Bash(Remove-Item -Force \"c:\\\\Users\\\\devan\\\\Downloads\\\\Orygin\\\\Cc\\\\backend\\\\tsconfig.json\" -ErrorAction SilentlyContinue)"
     ]
   }
 }
