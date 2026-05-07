@@ -13,13 +13,9 @@ export function useAgents() {
 
 export function useRefreshAgents() {
   const queryClient = useQueryClient();
-  return () => {
-    api.post('/agents/health-check').then(() => {
-      // Small delay so DB writes from the health check are visible before re-fetch
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ['agents'] });
-      }, 500);
-    });
+  return async () => {
+    await api.post('/agents/health-check');
+    await queryClient.invalidateQueries({ queryKey: ['agents'] });
   };
 }
 
