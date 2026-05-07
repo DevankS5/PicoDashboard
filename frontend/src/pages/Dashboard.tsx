@@ -29,7 +29,10 @@ export function Dashboard() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-[28px] font-semibold text-white tracking-tight mb-2">
+          <h1
+            className="text-[42px] text-white mb-2 leading-none"
+            style={{ fontFamily: '"Playfair Display", "Didot", serif', fontStyle: 'italic', fontWeight: 400, letterSpacing: '-0.01em' }}
+          >
             Mission Control
           </h1>
           <div className="flex items-center gap-3 text-[13px]">

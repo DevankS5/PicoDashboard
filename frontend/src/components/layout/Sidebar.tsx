@@ -20,7 +20,10 @@ export function Sidebar() {
         <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white flex items-center justify-center">
           <Radio size={14} className="text-black" />
         </div>
-        <span className="text-sm font-bold tracking-widest uppercase text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100">
+        <span
+          className="text-[17px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 delay-100 leading-none"
+          style={{ fontFamily: '"Playfair Display", "Didot", serif', fontStyle: 'italic', fontWeight: 400 }}
+        >
           Mission Control
         </span>
       </div>
