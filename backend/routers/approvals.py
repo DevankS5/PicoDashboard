@@ -1,5 +1,5 @@
 import logging
-from typing import Literal
+from typing import Literal, Optional
 
 import httpx
 from beanie import PydanticObjectId
@@ -25,7 +25,22 @@ def _not_found():
     )
 
 
-def _task_summary(task: Task) -> dict:
+async def _build_agent_map(tasks: list[Task]) -> dict[str, dict]:
+    ids = {i for t in tasks for i in [t.assigned_to, t.assigned_by] if i}
+    if not ids:
+        return {}
+    agents = await Agent.find({"_id": {"$in": [PydanticObjectId(i) for i in ids]}}).to_list()
+    return {str(a.id): {"id": str(a.id), "name": a.name} for a in agents}
+
+
+def _task_summary(task: Task, agent_map: dict[str, dict] | None = None) -> dict:
+    def resolve(agent_id: Optional[str]):
+        if agent_id is None:
+            return None
+        if agent_map and agent_id in agent_map:
+            return agent_map[agent_id]
+        return {"id": agent_id, "name": None}
+
     return {
         "id": str(task.id),
         "board_id": task.board_id,
@@ -33,8 +48,8 @@ def _task_summary(task: Task) -> dict:
         "description": task.description,
         "status": task.status.value,
         "approval_note": task.approval_note,
-        "assigned_to": task.assigned_to,
-        "assigned_by": task.assigned_by,
+        "assigned_to": resolve(task.assigned_to),
+        "assigned_by": resolve(task.assigned_by),
         "deadline": task.deadline.isoformat() if task.deadline else None,
         "created_at": task.created_at.isoformat() if task.created_at else None,
         "updated_at": task.updated_at.isoformat() if task.updated_at else None,
@@ -57,7 +72,8 @@ class ResolveApprovalBody(BaseModel):
 @router.get("/approvals")
 async def list_approvals():
     tasks = await Task.find({"status": TaskStatus.REQUIRES_APPROVAL.value}).to_list()
-    return _ok([_task_summary(t) for t in tasks])
+    agent_map = await _build_agent_map(tasks)
+    return _ok([_task_summary(t, agent_map) for t in tasks])
 
 
 @router.post("/require_approval")
@@ -89,7 +105,8 @@ async def require_approval(
         except Exception as exc:
             logger.warning("Bot webhook delivery failed for agent %s: %s", calling_agent.name, exc)
 
-    return _ok(_task_summary(task))
+    agent_map = await _build_agent_map([task])
+    return _ok(_task_summary(task, agent_map))
 
 
 @router.post("/approvals/{task_id}/resolve")
@@ -104,4 +121,5 @@ async def resolve_approval(task_id: str, body: ResolveApprovalBody):
         task.status = TaskStatus.NOT_STARTED
 
     await task.save()
-    return _ok(_task_summary(task))
+    agent_map = await _build_agent_map([task])
+    return _ok(_task_summary(task, agent_map))

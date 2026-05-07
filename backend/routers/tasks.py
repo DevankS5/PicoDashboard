@@ -92,7 +92,12 @@ async def list_tasks(
         filters["assigned_to"] = assigned_to_id
 
     tasks = await Task.find(filters).to_list()
-    return _ok([_task_out(t) for t in tasks])
+    ids = {i for t in tasks for i in [t.assigned_to, t.assigned_by] if i}
+    agent_map: dict[str, dict] = {}
+    if ids:
+        agents = await Agent.find({"_id": {"$in": [PydanticObjectId(i) for i in ids]}}).to_list()
+        agent_map = {str(a.id): {"id": str(a.id), "name": a.name} for a in agents}
+    return _ok([_task_out(t, agent_map) for t in tasks])
 
 
 @router.get("/{task_id}")

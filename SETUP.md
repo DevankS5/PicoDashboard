@@ -1,24 +1,31 @@
 # SETUP — Getting Mission Control Running
 
-Everything (code, configs, schema, seed) is already built. These are the only manual steps needed.
+No seed data. No hardcoded agents. Start the stack, then add agents via `POST /agents` from the dashboard.
 
 ---
 
-## Option A: Docker (Recommended — one command)
+## Option A: Docker (Recommended)
 
 ### Prerequisites
 - [ ] Docker Desktop installed and running
+- [ ] Your remote MongoDB URL ready (hosted on Coolify/VBS)
 
 ### Steps
-```bash
-cd /project
-docker-compose up
-```
+
+1. Create a root `.env` file with your MongoDB URL:
+   ```env
+   MONGODB_URL=mongodb://user:password@your-vbs-host:27017/mission_control
+   ```
+
+2. Start the stack:
+   ```bash
+   docker-compose up
+   ```
 
 Docker will:
-1. Start PostgreSQL on `:5432`
-2. Build and start the backend on `:3001` (runs migrations + seed automatically)
-3. Build and start the frontend on `:5173`
+1. Build and start the FastAPI backend on `:3001`
+2. Build and start the Vite frontend on `:5173`
+3. Connect to your remote MongoDB on startup
 
 Open → **http://localhost:5173**
 
@@ -27,115 +34,138 @@ Open → **http://localhost:5173**
 ## Option B: Local Dev (No Docker)
 
 ### Prerequisites
-- [ ] Node.js 20 LTS installed (`node --version` should show v20.x)
-- [ ] PostgreSQL 15 running locally on port 5432
-- [ ] A database named `mission_control` created
+- [ ] Python 3.12+ installed
+- [ ] Node.js 20 LTS installed
+- [ ] Remote MongoDB URL ready
 
-### Step 1 — Create the database
-```sql
--- In psql or any Postgres client:
-CREATE DATABASE mission_control;
-```
+### Step 1 — Backend
 
-### Step 2 — Configure environment
 ```bash
 cp backend/.env.example backend/.env
+# Edit backend/.env and set MONGODB_URL to your remote instance
 ```
 
-Edit `backend/.env` and set the three agent API keys to unique values (see below).
-
-### Step 3 — Backend setup
 ```bash
 cd backend
-npm install
-npx prisma migrate dev --name init
-npx prisma db seed
-npm run dev
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 3001 --reload
 ```
 
-Backend will be live at **http://localhost:3001**
+Backend live at **http://localhost:3001**
 
-### Step 4 — Frontend setup (new terminal)
+### Step 2 — Frontend (new terminal)
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Frontend will be live at **http://localhost:5173**
+Frontend live at **http://localhost:5173**
 
 ---
 
-## Agent API Keys
+## Adding Agents
 
-Agent-facing endpoints (`POST /tasks`, `PUT /tasks/:id`, `POST /require_approval`) now require authentication. Each agent must include its API key in every request:
+The database starts empty. Add agents from the dashboard or via curl:
+
+```bash
+curl -s -X POST http://localhost:3001/agents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Nexus",
+    "health_endpoint": "http://185.197.31.37:18790/health",
+    "description": "Optional description",
+    "bot_webhook_url": "https://your-telegram-or-discord-webhook"
+  }'
+```
+
+The response returns the agent's **plaintext API key once** — copy it immediately:
+
+```json
+{
+  "success": true,
+  "data": {
+    "id": "664abc...",
+    "name": "Nexus",
+    "api_key": "the-key-shown-only-once"
+  }
+}
+```
+
+Give the agent its key. The key is never stored in plaintext or returned again. To rotate it: `POST /agents/{id}/regenerate-key`.
+
+---
+
+## Agent API Authentication
+
+All agent-facing endpoints require:
 
 ```
 Authorization: Bearer <API_KEY>
 ```
 
-### Generate keys
+Agent-facing endpoints: `POST /require_approval`, `GET /skills/*`, `POST /skills/*`, `DELETE /skills/*`.
 
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Run this 3 times and set the output in `backend/.env`:
-
-```env
-AGENT_NEXUS_API_KEY=<64-char hex key>
-AGENT_CIPHER_API_KEY=<64-char hex key>
-AGENT_RELAY_API_KEY=<64-char hex key>
-```
-
-The `.env` already contains pre-generated development keys — they work out of the box for local testing. Rotate them before exposing the backend to any external network.
-
-### Distribute to agents
-
-Each PicoClock agent needs its own key. Give each agent only its own key — not the others:
-
-| Agent | Env var to share |
-|-------|-----------------|
-| Nexus | `AGENT_NEXUS_API_KEY` |
-| Cipher | `AGENT_CIPHER_API_KEY` |
-| Relay | `AGENT_RELAY_API_KEY` |
+Operator dashboard endpoints (`/agents`, `/boards`, `/tasks`, `/approvals`) require no auth (trusted local network).
 
 ---
 
-## Verify It's Working
+## How Agent Task Polling Works
 
-1. Open **http://localhost:5173** → should see the dashboard with 3 agent cards
-2. All 3 agents (Nexus, Cipher, Relay) will show as **Offline** initially — correct, their health endpoints don't exist yet
-3. Navigate to **Boards** → create a task
-4. Navigate to **Approvals** → should show "All clear"
+Agents poll `GET /skills/get-tasks` using their API key. The endpoint returns **only tasks assigned to the calling agent** — other agents' tasks are never included. If a task exists for that agent, the agent acts on it; otherwise it stays idle. No WebSockets, no push — polling only.
+
+---
+
+## Manual Health Check Trigger (dev only)
+
+```bash
+curl -X POST http://localhost:3001/agents/health-check
+```
+
+Returns `{ "checked": n, "online": n, "offline": n }`. The scheduler also runs automatically every 5 minutes on startup.
 
 ---
 
 ## Test the Agent-Facing API
 
-These commands simulate what a PicoClock agent would send. Replace `YOUR_API_KEY` with the relevant key from `backend/.env`.
+Replace `YOUR_API_KEY` with the key returned when you created the agent, and `BOARD_ID` / `TASK_ID` with real IDs.
 
 ```bash
-# Get the board ID
+# Get boards (create one first if empty)
 curl http://localhost:3001/boards
 
-# Create a task (replace BOARD_ID and API_KEY)
-curl -X POST http://localhost:3001/tasks \
+# Agent creates a task on its own board
+curl -X POST http://localhost:3001/skills/create-task \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"boardId":"BOARD_ID","title":"Test task","status":"IN_PROGRESS"}'
+  -d '{"board_id":"BOARD_ID","name":"Analyse logs","description":"Check for anomalies"}'
 
-# Trigger an approval request (replace TASK_ID and API_KEY)
+# Agent fetches its own tasks
+curl -H "Authorization: Bearer YOUR_API_KEY" \
+  http://localhost:3001/skills/get-tasks
+
+# Agent escalates a task for approval
 curl -X POST http://localhost:3001/require_approval \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
-  -d '{"taskId":"TASK_ID","reason":"Need API key for payment gateway"}'
+  -d '{"task_id":"TASK_ID","reason":"Need operator sign-off before proceeding"}'
+
+# Operator resolves the approval
+curl -X POST http://localhost:3001/approvals/TASK_ID/resolve \
+  -H "Content-Type: application/json" \
+  -d '{"action":"approve"}'
 ```
 
-Without the `Authorization` header, these calls return:
-```json
-{ "success": false, "error": "Missing or malformed Authorization header. Expected: Bearer <API_KEY>", "code": "UNAUTHORIZED" }
-```
+---
+
+## Verify It's Working
+
+1. Open **http://localhost:5173** → dashboard loads (empty agent grid until you add agents)
+2. Add an agent via `POST /agents` → agent card appears
+3. Health check runs automatically — agent shows Online/Offline based on `health_endpoint` response
+4. Navigate to **Boards** → create a board, then add tasks
+5. Navigate to **Approvals** → tasks escalated via `POST /require_approval` appear here
 
 ---
 
@@ -143,10 +173,10 @@ Without the `Authorization` header, these calls return:
 
 | Problem | Fix |
 |---------|-----|
-| `relation "agents" does not exist` | Run `npx prisma migrate dev` in `backend/` |
-| Port 5432 already in use | Stop your local Postgres or change the port in `docker-compose.yml` |
-| Port 5173 / 3001 in use | Kill the process using that port or change in the config files |
-| `Cannot find module '@prisma/client'` | Run `npx prisma generate` in `backend/` |
-| Agent calls return 401 | Check `Authorization: Bearer <KEY>` header is included |
-| Agent calls return 403 | Key is present but wrong — verify it matches the env var for that agent |
-| Keys not loading | Ensure `backend/.env` exists and has all three `AGENT_*_API_KEY` vars set |
+| `MONGODB_URL` not set | Create root `.env` (Docker) or `backend/.env` (local) with the variable |
+| MongoDB connection refused | Verify the remote host/port is reachable; check firewall rules on your VBS |
+| Port 3001 / 5173 in use | Kill the process using that port or change in `docker-compose.yml` |
+| Agent calls return 401 | `Authorization: Bearer <KEY>` header missing or malformed |
+| Agent calls return 401 (key present) | Key is wrong or was regenerated — re-issue via `POST /agents/{id}/regenerate-key` |
+| Agent always offline | Verify `health_endpoint` stored on the agent doc is reachable; trigger `POST /agents/health-check` to force a cycle |
+| `pydantic_settings` import error | Run `pip install -r requirements.txt` — ensure `pydantic-settings` is installed |
