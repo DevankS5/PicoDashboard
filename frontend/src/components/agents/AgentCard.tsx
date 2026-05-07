@@ -1,20 +1,51 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { Agent } from '../../types';
 import { StatusDot } from '../ui/StatusDot';
-import { formatRelative } from '../../utils/formatDate';
+import { useRelativeTime } from '../../hooks/useRelativeTime';
+import { useDeleteAgent } from '../../hooks/useAgents';
 
 interface AgentCardProps {
   agent: Agent;
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
+  const [confirming, setConfirming] = useState(false);
+  const { mutate: deleteAgent, isPending } = useDeleteAgent();
+  const lastChecked = useRelativeTime(agent.last_checked_at);
+
+  function handleDelete() {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    deleteAgent(agent.id, { onSettled: () => setConfirming(false) });
+  }
+
   return (
     <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-5 shadow-glow-sm transition-all duration-200 hover:border-[#333333] hover:shadow-glow-md flex flex-col h-full">
-      <div className="flex items-center gap-2.5 mb-3">
-        <StatusDot isOnline={agent.is_online} />
-        <span className="text-base font-bold tracking-widest uppercase text-white">
-          {agent.name}
-        </span>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <StatusDot isOnline={agent.is_online} />
+          <span className="text-base font-bold tracking-widest uppercase text-white">
+            {agent.name}
+          </span>
+        </div>
+
+        <button
+          onClick={handleDelete}
+          disabled={isPending}
+          onBlur={() => setConfirming(false)}
+          title={confirming ? 'Click again to confirm' : 'Remove agent'}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold transition-all duration-150 ${
+            confirming
+              ? 'bg-[#ff3b3b]/10 text-[#ff3b3b] border border-[#ff3b3b]/30'
+              : 'text-[#444444] hover:text-[#ff3b3b] border border-transparent hover:border-[#ff3b3b]/20'
+          }`}
+        >
+          <Trash2 size={12} />
+          {confirming ? 'Confirm?' : ''}
+        </button>
       </div>
 
       <p className="text-[13px] italic text-[#888888] leading-relaxed line-clamp-3 flex-1 mb-4">
@@ -31,7 +62,7 @@ export function AgentCard({ agent }: AgentCardProps) {
         </span>
         <span className="text-[#555555] text-[11px]">·</span>
         <span className="text-[11px] text-[#555555]">
-          Last checked {formatRelative(agent.last_checked_at)}
+          Last checked {lastChecked}
         </span>
       </div>
     </div>

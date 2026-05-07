@@ -8,13 +8,8 @@ services:
     restart: unless-stopped
     ports:
       - '3001:3001'
-    environment:
-      MONGODB_URL: ${MONGODB_URL}
-      PORT: 3001
-      NODE_ENV: development
-      HEALTH_CHECK_INTERVAL_MS: 300000
-      HEALTH_CHECK_TIMEOUT_MS: 5000
-      FRONTEND_ORIGIN: http://localhost:5173
+    env_file:
+      - ./backend/.env
 
   frontend:
     build:

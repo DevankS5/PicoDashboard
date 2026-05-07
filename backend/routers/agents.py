@@ -1,16 +1,15 @@
 import secrets
 from typing import Optional
 
+import bcrypt
 from beanie import PydanticObjectId
 from fastapi import APIRouter, HTTPException
-from passlib.context import CryptContext
 from pydantic import BaseModel
 
 from models.agent import Agent
 from services.health_service import run_health_checks
 
 router = APIRouter()
-_pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def _agent_out(agent: Agent, *, plaintext_key: Optional[str] = None) -> dict:
@@ -77,7 +76,7 @@ async def create_agent(body: CreateAgentBody):
         description=body.description,
         health_endpoint=body.health_endpoint,
         bot_webhook_url=body.bot_webhook_url,
-        api_key_hash=_pwd.hash(raw_key),
+        api_key_hash=bcrypt.hashpw(raw_key.encode(), bcrypt.gensalt()).decode(),
     )
     await agent.insert()
     return _ok(_agent_out(agent, plaintext_key=raw_key))
@@ -110,7 +109,7 @@ async def regenerate_key(agent_id: str):
     if agent is None:
         return _not_found()
     raw_key = secrets.token_urlsafe(32)
-    agent.api_key_hash = _pwd.hash(raw_key)
+    agent.api_key_hash = bcrypt.hashpw(raw_key.encode(), bcrypt.gensalt()).decode()
     await agent.save()
     return _ok({"id": agent_id, "api_key": raw_key})
 

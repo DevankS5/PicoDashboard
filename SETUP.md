@@ -74,7 +74,7 @@ curl -s -X POST http://localhost:3001/agents \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Nexus",
-    "health_endpoint": "http://185.197.31.37:18790/health",
+    "health_endpoint": "/health",
     "description": "Optional description",
     "bot_webhook_url": "https://your-telegram-or-discord-webhook"
   }'

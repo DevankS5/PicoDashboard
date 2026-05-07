@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional, Annotated
-from beanie import Document, Indexed
-from bson import ObjectId
+from typing import Optional
+from beanie import Document
 from pydantic import Field
 
 
@@ -14,12 +13,12 @@ class TaskStatus(str, Enum):
 
 
 class Task(Document):
-    board_id: Indexed(str)
+    board_id: str
     name: str
     description: Optional[str] = None
     assigned_to: Optional[str] = None   # Agent ObjectId as string
     assigned_by: Optional[str] = None   # Agent ObjectId as string
-    status: Indexed(TaskStatus) = TaskStatus.NOT_STARTED
+    status: TaskStatus = TaskStatus.NOT_STARTED
     created_at: datetime = None
     updated_at: datetime = None
     deadline: Optional[datetime] = None
