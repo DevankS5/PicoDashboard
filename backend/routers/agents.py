@@ -7,6 +7,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 
 from models.agent import Agent
+from services.health_service import run_health_checks
 
 router = APIRouter()
 _pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -112,3 +113,9 @@ async def regenerate_key(agent_id: str):
     agent.api_key_hash = _pwd.hash(raw_key)
     await agent.save()
     return _ok({"id": agent_id, "api_key": raw_key})
+
+
+@router.post("/health-check", status_code=200)
+async def manual_health_check():
+    result = await run_health_checks()
+    return _ok(result)
