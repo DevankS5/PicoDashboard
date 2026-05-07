@@ -10,11 +10,12 @@ interface Props {
 
 interface FormState {
   name: string;
+  agent_id: string;
   description: string;
   health_endpoint: string;
 }
 
-const EMPTY: FormState = { name: '', description: '', health_endpoint: '' };
+const EMPTY: FormState = { name: '', agent_id: '', description: '', health_endpoint: '' };
 
 export function AddAgentModal({ isOpen, onClose }: Props) {
   const [form, setForm] = useState<FormState>(EMPTY);
@@ -34,6 +35,7 @@ export function AddAgentModal({ isOpen, onClose }: Props) {
     createAgent(
       {
         name: form.name.trim(),
+        agent_id: form.agent_id.trim(),
         description: form.description.trim() || undefined,
         health_endpoint: form.health_endpoint.trim(),
       },
@@ -94,6 +96,13 @@ export function AddAgentModal({ isOpen, onClose }: Props) {
             placeholder="Nexus"
           />
           <Field
+            label="Agent ID"
+            required
+            value={form.agent_id}
+            onChange={(v) => setForm((f) => ({ ...f, agent_id: v }))}
+            placeholder="nexus-001"
+          />
+          <Field
             label="Description"
             value={form.description}
             onChange={(v) => setForm((f) => ({ ...f, description: v }))}
@@ -115,7 +124,7 @@ export function AddAgentModal({ isOpen, onClose }: Props) {
 
           <button
             type="submit"
-            disabled={isPending || !form.name.trim() || !form.health_endpoint.trim()}
+            disabled={isPending || !form.name.trim() || !form.agent_id.trim() || !form.health_endpoint.trim()}
             className="w-full py-2.5 text-[13px] font-semibold bg-white text-black rounded-lg hover:bg-[#e0e0e0] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {isPending ? 'Registering…' : 'Register Agent'}

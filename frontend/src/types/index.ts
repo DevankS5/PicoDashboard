@@ -7,6 +7,7 @@ export type TaskStatus =
 export interface Agent {
   id: string;
   name: string;
+  agent_id: string;
   description: string | null;
   health_endpoint: string;
   is_online: boolean;
@@ -56,6 +57,7 @@ export interface UpdateTaskPayload {
 
 export interface CreateAgentPayload {
   name: string;
+  agent_id: string;
   description?: string;
   health_endpoint: string;
   bot_webhook_url?: string;

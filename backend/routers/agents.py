@@ -16,6 +16,7 @@ def _agent_out(agent: Agent, *, plaintext_key: Optional[str] = None) -> dict:
     doc = {
         "id": str(agent.id),
         "name": agent.name,
+        "agent_id": agent.agent_id,
         "description": agent.description,
         "health_endpoint": agent.health_endpoint,
         "is_online": agent.is_online,
@@ -40,6 +41,7 @@ def _not_found():
 
 class CreateAgentBody(BaseModel):
     name: str
+    agent_id: str
     description: Optional[str] = None
     health_endpoint: str
     bot_webhook_url: Optional[str] = None
@@ -47,6 +49,7 @@ class CreateAgentBody(BaseModel):
 
 class UpdateAgentBody(BaseModel):
     name: Optional[str] = None
+    agent_id: Optional[str] = None
     description: Optional[str] = None
     health_endpoint: Optional[str] = None
     bot_webhook_url: Optional[str] = None
@@ -73,6 +76,7 @@ async def create_agent(body: CreateAgentBody):
     raw_key = secrets.token_urlsafe(32)
     agent = Agent(
         name=body.name,
+        agent_id=body.agent_id,
         description=body.description,
         health_endpoint=body.health_endpoint,
         bot_webhook_url=body.bot_webhook_url,
