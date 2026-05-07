@@ -26,25 +26,25 @@ export function ApprovalCard({
             Requires Approval
           </span>
         </div>
-        <span className="text-xs text-[#555555]">{formatDateTime(task.updatedAt)}</span>
+        <span className="text-xs text-[#555555]">{formatDateTime(task.updated_at)}</span>
       </div>
 
       <div className="border-t border-[#1f1f1f] pt-3 mb-3">
-        <p className="text-sm font-semibold text-white mb-1">{task.title}</p>
-        {task.assignedTo && (
+        <p className="text-sm font-semibold text-white mb-1">{task.name}</p>
+        {task.assigned_to && (
           <p className="text-xs text-[#888888]">
             Agent:{' '}
-            <span className="text-white font-medium">{task.assignedTo.name}</span>{' '}
+            <span className="text-white font-medium">{task.assigned_to.name}</span>{' '}
             → requested intervention
           </p>
         )}
       </div>
 
-      {task.approvalNote && (
+      {task.approval_note && (
         <div className="mb-4">
           <p className="text-xs text-[#555555] uppercase tracking-widest mb-1.5">Reason</p>
           <blockquote className="text-sm text-[#888888] italic border-l border-[#333333] pl-3 leading-relaxed">
-            "{task.approvalNote}"
+            "{task.approval_note}"
           </blockquote>
         </div>
       )}

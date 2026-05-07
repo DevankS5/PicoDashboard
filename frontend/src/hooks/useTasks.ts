@@ -6,7 +6,7 @@ export function useTasks(boardId?: string) {
   return useQuery<Task[]>({
     queryKey: ['tasks', boardId],
     queryFn: () =>
-      api.get('/tasks', { params: boardId ? { boardId } : {} }).then((r) => r.data.data),
+      api.get('/tasks', { params: boardId ? { board_id: boardId } : {} }).then((r) => r.data.data),
   });
 }
 

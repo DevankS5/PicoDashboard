@@ -8,7 +8,7 @@ export function Dashboard() {
   const { data: agents, isLoading, dataUpdatedAt } = useAgents();
   const refresh = useRefreshAgents();
 
-  const onlineCount = agents?.filter((a) => a.isOnline).length ?? 0;
+  const onlineCount = agents?.filter((a) => a.is_online).length ?? 0;
   const totalCount = agents?.length ?? 0;
 
   return (

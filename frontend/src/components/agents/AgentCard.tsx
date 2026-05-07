@@ -11,7 +11,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   return (
     <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl p-5 shadow-glow-sm transition-all duration-200 hover:border-[#333333] hover:shadow-glow-md flex flex-col h-full">
       <div className="flex items-center gap-2.5 mb-3">
-        <StatusDot isOnline={agent.isOnline} />
+        <StatusDot isOnline={agent.is_online} />
         <span className="text-base font-bold tracking-widest uppercase text-white">
           {agent.name}
         </span>
@@ -24,14 +24,14 @@ export function AgentCard({ agent }: AgentCardProps) {
       <div className="border-t border-white/[0.06] pt-3 flex items-center gap-2">
         <span
           className={`text-[11px] font-semibold tracking-widest uppercase ${
-            agent.isOnline ? 'text-[#00ff87]' : 'text-[#ff3b3b]'
+            agent.is_online ? 'text-[#00ff87]' : 'text-[#ff3b3b]'
           }`}
         >
-          {agent.isOnline ? 'Online' : 'Offline'}
+          {agent.is_online ? 'Online' : 'Offline'}
         </span>
         <span className="text-[#555555] text-[11px]">·</span>
         <span className="text-[11px] text-[#555555]">
-          Last checked {formatRelative(agent.lastCheckedAt)}
+          Last checked {formatRelative(agent.last_checked_at)}
         </span>
       </div>
     </div>

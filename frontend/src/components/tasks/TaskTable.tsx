@@ -11,7 +11,7 @@ interface TaskTableProps {
   onStatusChange: (id: string, status: TaskStatus) => void;
 }
 
-const headers = ['Title', 'Status', 'Assigned To', 'Due Date', ''];
+const headers = ['Name', 'Status', 'Assigned To', 'Deadline', ''];
 
 export function TaskTable({
   tasks,

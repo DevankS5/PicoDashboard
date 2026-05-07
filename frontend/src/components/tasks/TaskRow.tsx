@@ -96,16 +96,16 @@ export function TaskRow({ task, onEdit, onDelete, onStatusChange }: TaskRowProps
   return (
     <tr className="border-b border-[#1f1f1f] hover:bg-white/[0.02] transition-colors h-[52px]">
       <td className="px-4 py-3 text-sm text-white font-medium max-w-xs truncate">
-        {task.title}
+        {task.name}
       </td>
       <td className="px-4 py-3">
         <TaskStatusBadge status={task.status} />
       </td>
       <td className="px-4 py-3 text-sm text-[#888888]">
-        {task.assignedTo?.name || '—'}
+        {task.assigned_to?.name || '—'}
       </td>
       <td className="px-4 py-3 text-sm text-[#888888]">
-        {formatDate(task.dueDate)}
+        {formatDate(task.deadline)}
       </td>
       <td className="px-4 py-3 text-right">
         <button

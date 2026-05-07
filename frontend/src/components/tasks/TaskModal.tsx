@@ -36,28 +36,28 @@ export function TaskModal({
 }: TaskModalProps) {
   const isEdit = !!task;
 
-  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [assignedById, setAssignedById] = useState('');
   const [assignedToId, setAssignedToId] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [deadline, setDeadline] = useState('');
   const [status, setStatus] = useState<TaskStatus>('NOT_STARTED');
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title);
+      setName(task.name);
       setDescription(task.description || '');
-      setAssignedById(task.assignedBy?.id || '');
-      setAssignedToId(task.assignedTo?.id || '');
-      setDueDate(task.dueDate ? task.dueDate.slice(0, 10) : '');
+      setAssignedById(task.assigned_by?.id || '');
+      setAssignedToId(task.assigned_to?.id || '');
+      setDeadline(task.deadline ? task.deadline.slice(0, 10) : '');
       setStatus(task.status);
     } else {
-      setTitle('');
+      setName('');
       setDescription('');
       setAssignedById('');
       setAssignedToId('');
-      setDueDate('');
+      setDeadline('');
       setStatus('NOT_STARTED');
     }
     setError('');
@@ -65,17 +65,17 @@ export function TaskModal({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) {
-      setError('Title is required');
+    if (!name.trim()) {
+      setError('Name is required');
       return;
     }
     const payload = {
-      ...(isEdit ? {} : { boardId }),
-      title: title.trim(),
+      ...(isEdit ? {} : { board_id: boardId }),
+      name: name.trim(),
       description: description.trim() || undefined,
-      assignedById: assignedById || undefined,
-      assignedToId: assignedToId || undefined,
-      dueDate: dueDate || undefined,
+      assigned_by: assignedById || undefined,
+      assigned_to: assignedToId || undefined,
+      deadline: deadline || undefined,
       status,
     };
     onSubmit(payload);
@@ -89,12 +89,12 @@ export function TaskModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className={labelClass}>Title *</label>
+          <label className={labelClass}>Name *</label>
           <input
             className={inputClass}
-            placeholder="Task title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Task name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             autoFocus
           />
           {error && <p className="text-[#ff3b3b] text-xs mt-1">{error}</p>}
@@ -146,12 +146,12 @@ export function TaskModal({
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className={labelClass}>Due Date</label>
+            <label className={labelClass}>Deadline</label>
             <input
               type="date"
               className={inputClass}
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
             />
           </div>
           <div>
