@@ -55,15 +55,7 @@ export function AgentDetailModal({ agent, onClose }: Props) {
               }
             />
             <Row label="Health Endpoint" value={agent.health_endpoint} />
-            <Row
-              label="Webhook URL"
-              value={
-                <span className={agent.bot_webhook_url ? 'text-white' : 'text-[#444444] italic'}>
-                  {agent.bot_webhook_url || 'Not configured'}
-                </span>
-              }
-            />
-            <Row label="Last Health Check" value={agent.last_checked_at ? lastChecked : '—'} />
+<Row label="Last Health Check" value={agent.last_checked_at ? lastChecked : '—'} />
             <Row
               label="Registered"
               value={new Date(agent.created_at).toLocaleString()}
