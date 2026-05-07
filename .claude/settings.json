@@ -7,7 +7,9 @@
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(curl -s http://localhost:3001/agents)",
       "Bash(docker-compose up *)",
-      "PowerShell(docker exec cc-backend-1 wget -qO- http://185.197.31.37:18790/health 2>&1)"
+      "PowerShell(docker exec cc-backend-1 wget -qO- http://185.197.31.37:18790/health 2>&1)",
+      "Bash(curl -s -X POST http://localhost:3001/tasks -H \"Content-Type: application/json\" -d \"{\\\\\"boardId\\\\\":\\\\\"test\\\\\",\\\\\"title\\\\\":\\\\\"test\\\\\"}\")",
+      "WebFetch(domain:docs.picoclaw.io)"
     ]
   }
 }

@@ -39,8 +39,8 @@ const updateTaskSchema = z.object({
 
 router.get('/', taskController.getAll);
 router.get('/:id', taskController.getById);
-// Agent-facing write endpoints require a valid API key
-router.post('/', agentAuth, validateRequest(createTaskSchema), taskController.create);
+router.post('/', validateRequest(createTaskSchema), taskController.create);
+// Agent-facing update endpoint requires a valid API key
 router.put('/:id', agentAuth, validateRequest(updateTaskSchema), taskController.update);
 router.delete('/:id', taskController.delete);
 

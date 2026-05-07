@@ -85,7 +85,7 @@ export function Boards() {
       </div>
 
       {/* Task Table */}
-      <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl overflow-hidden">
+      <div className="bg-[#0a0a0a] border border-[#1f1f1f] rounded-xl">
         <TaskTable
           tasks={tasks}
           isLoading={tasksLoading}
